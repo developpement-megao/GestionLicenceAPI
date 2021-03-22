@@ -2,7 +2,7 @@
 security:
     encoders:
         App\Entity\User:
-            id: 'App\Security\Encoder\MyCustomPasswordEncoder'
+            id: 'App\Security\Encoder\MyCustomEncoder'
 
     providers:
         app_user_provider:

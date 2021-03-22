@@ -5,8 +5,7 @@ namespace App\Controller;
 use App\Entity\Licence;
 use App\Repository\CabinetRepository;
 use App\Repository\LicenceRepository;
-use App\Security\Encoder\MyCustomPasswordEncoder;
-use DateTime;
+use App\Security\Encoder\MyCustomEncoder;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -94,7 +93,7 @@ class LicenceController extends AbstractController
     /**
      * @Route("api/download/licences/{idLicence}", name="licences_download", methods={"GET"})
      */
-    public function downloadLicence($idLicence = -1, LicenceRepository $licenceRepository, MyCustomPasswordEncoder $encoder): Response
+    public function downloadLicence($idLicence = -1, LicenceRepository $licenceRepository, MyCustomEncoder $encoder): Response
     {
         if ($idLicence == -1) {
             return $this->json(["message" => "Veuillez renseigner un identifiant de licence"], 400);
@@ -112,14 +111,13 @@ class LicenceController extends AbstractController
 
             $cleLicence = [
                 "nomCabinet" => str_pad($cabinet->getNomCabinet(), 64),
-                "idLicence" => str_pad($cabinet->getId(), 4),
                 "dateDebut" => date_format($licence->getDateDebut(), "Y") . date_format($licence->getDateDebut(), "m") . date_format($licence->getDateDebut(), "d"),
                 "dateFin" => date_format($licence->getDateFin(), "Y") . date_format($licence->getDateFin(), "m") . date_format($licence->getDateFin(), "d"),
-                "deltaJourFin" => str_pad($licence->getDeltaJourFin(), 4),
+                "deltaJourFin" => str_pad(intval($licence->getDeltaJourFin()), 4),
                 "nombrePostes" => str_pad($licence->getNombrePostes(), 4),
-                "deltaNombrePoste" => str_pad($licence->getDeltaNombrePostes(), 4)
+                "deltaNombrePostes" => str_pad(intval($licence->getDeltaNombrePostes()), 4)
             ];
-
+            
             return $this->json($encoder->encodePassword(implode("|", $cleLicence), ""), 200);
         }
     }
