@@ -76,6 +76,10 @@ class LicenceController extends AbstractController
             return $this->json(["message" => "La date de début est obligatoire"], 400);
         }
 
+        if (!empty($newLicence->getDateFin()) && $newLicence->getDateFin()<= $newLicence->getDateDebut()) {
+            return $this->json(["message" => "La date de fin doit être supérieur à la date de début"], 400);
+        }
+
         if (intval($newLicence->getNombrePostes()) > 1000) {
             return $this->json(["message" => "La nombre de postes doit être inférieur à 1001"], 400);
         }
