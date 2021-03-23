@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\User;
 use App\Repository\UserRepository;
 use App\Security\Encoder\MyCustomEncoder;
 use Doctrine\ORM\EntityManagerInterface;
@@ -33,7 +34,7 @@ class AuthController extends AbstractController
     /**
      * @Route("api/admin/user/password/{nomCabinet}", name="user_password", methods={"GET"})
      */
-    public function getCabinetUserPassword(string $nomCabinet = "", UserRepository $userRepository, MyCustomEncoder $encoder): Response
+    public function getCabinetUserPassword(string $nomCabinet = "", UserRepository $userRepository, MyCustomEncoder $encoder, UserPasswordEncoderInterface $enc): Response
     {
 
         if ($nomCabinet) {
@@ -42,7 +43,7 @@ class AuthController extends AbstractController
             if (empty($password)) {
                 return $this->json(["message" => "Cet utilisateur n'existe pas"], 400);
             }
-
+            $user = new User();
             return $this->json($encoder->decodePassword($password["password"], 200));
         } else {
             return $this->json(["message" => "Username non renseigné"], 400);
