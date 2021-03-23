@@ -45,7 +45,7 @@ class Cabinet
     private $nomClient;
 
     /**
-     * @ORM\Column(type="string", length=64, nullable=true)
+     * @ORM\Column(type="string", length=10, nullable=true)
      * @Groups("cabinet:read")
      */
     private $tel;
@@ -57,7 +57,7 @@ class Cabinet
     private $adresse;
 
     /**
-     * @ORM\Column(type="string", length=128, nullable=true)
+     * @ORM\Column(type="string", length=64, nullable=true)
      * @Groups("cabinet:read")
      */
     private $email;

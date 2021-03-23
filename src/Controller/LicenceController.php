@@ -76,6 +76,22 @@ class LicenceController extends AbstractController
             return $this->json(["message" => "La date de début est obligatoire"], 400);
         }
 
+        if (intval($newLicence->getNombrePostes()) > 1000) {
+            return $this->json(["message" => "La nombre de postes doit être inférieur à 1001"], 400);
+        }
+
+        if (intval($newLicence->getDeltaNombrePostes()) > 30) {
+            return $this->json(["message" => "Le delta du nombre de postes doit être inférieur à 31"], 400);
+        }
+
+        if (intval($newLicence->getDeltaJourFin()) > 30) {
+            return $this->json(["message" => "Le delta du nombre de jours avant l'expiration de la licence doit être inférieur à 31"], 400);
+        }
+
+        if(empty($licenceDecode["cabinetId"])){
+            return $this->json(["message" => "L'id du cabinet est obligatoire"], 400);
+        }
+        
         $cabinet = $cabinetRepository->find($licenceDecode["cabinetId"]);
         if (!$cabinet) {
             return $this->json(["message" => "Ce cabinet n'existe pas"], 400);

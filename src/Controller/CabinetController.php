@@ -56,18 +56,50 @@ class CabinetController extends AbstractController
     /**
      * @Route("api/admin/cabinet/create", name="cabinet_create", methods={"POST"})
      */
-    public function createCabinet(Request $request, SerializerInterface $serializer, EntityManagerInterface $entityManager, UserPasswordEncoderInterface $encoder): Response
+    public function createCabinet(Request $request,  SerializerInterface $serializer, EntityManagerInterface $entityManager, UserPasswordEncoderInterface $encoder): Response
     {
 
         $jsonRecu = $request->getContent();
         $newCabinet = $serializer->deserialize(json_encode(json_decode($jsonRecu, true)["cabinet"]), Cabinet::class, 'json');
-
+        
         if ($newCabinet->getNomCabinet() === "") {
             return $this->json(["message" => "Le nom du cabinet est obligatoire"], 400);
         }
 
         if ($newCabinet->getIsActive() === null) {
             return $this->json(["message" => "Le statut (actif/inactif) est obligatoire"], 400);
+        }
+
+        if (strlen($newCabinet->getNomCabinet()) > 64) {
+            return $this->json(["message" => "Le nom du cabinet doit faire moins de 65 caractères"], 400);
+        }
+
+        if (strlen($newCabinet->getNomContact()) > 64) {
+            return $this->json(["message" => "Le nom du contact doit faire moins de 65 caractères"], 400);
+        }
+
+        if (strlen($newCabinet->getNomClient()) > 64) {
+            return $this->json(["message" => "Le nom du client doit faire moins de 65 caractères"], 400);
+        }
+
+        if (strlen($newCabinet->getAdresse()) > 128) {
+            return $this->json(["message" => "L'adresse doit faire moins de 129 caractères"], 400);
+        }
+
+        if (strlen($newCabinet->getTel()) > 10) {
+            return $this->json(["message" => "Le numéro de téléphone doit être composé de 10 chiffres"], 400);
+        }
+
+        if (strlen($newCabinet->getEmail()) > 64) {
+            return $this->json(["message" => "L'adresse email doit faire moins de 65 caractères"], 400);
+        }
+
+        if (!empty($newCabinet->getEmail()) && !filter_var($newCabinet->getEmail(), FILTER_VALIDATE_EMAIL)) {
+            return $this->json(["message" => "L'adresse email n'est pas au bon format"], 400);
+        }
+
+        if (!empty($newCabinet->getTel()) && !filter_var($newCabinet->getTel(), FILTER_VALIDATE_REGEXP, ["options" => ["regexp" => "/^[0-9]{10}$/"]])) {
+            return $this->json(["message" => "Le numéro de téléphone n'est pas au bon format"], 400);
         }
 
         $newUser = new User();
@@ -110,6 +142,42 @@ class CabinetController extends AbstractController
             return $this->json(["message" => "Le nom du cabinet est obligatoire"], 400);
         }
 
+        if ($updatedCabinet["isActive"] === null) {
+            return $this->json(["message" => "Le statut (actif/inactif) est obligatoire"], 400);
+        }
+
+        if (strlen($updatedCabinet["nomCabinet"]) > 64) {
+            return $this->json(["message" => "Le nom du cabinet doit faire moins de 65 caractères"], 400);
+        }
+
+        if (strlen($updatedCabinet["nomContact"]) > 64) {
+            return $this->json(["message" => "Le nom du contact doit faire moins de 65 caractères"], 400);
+        }
+
+        if (strlen($updatedCabinet["nomClient"]) > 64) {
+            return $this->json(["message" => "Le nom du client doit faire moins de 65 caractères"], 400);
+        }
+
+        if (strlen($updatedCabinet["adresse"]) > 128) {
+            return $this->json(["message" => "L'adresse doit faire moins de 129 caractères"], 400);
+        }
+
+        if (strlen($updatedCabinet["tel"]) > 10) {
+            return $this->json(["message" => "Le numéro de téléphone doit être composé de 10 chiffres"], 400);
+        }
+
+        if (strlen($updatedCabinet["email"]) > 64) {
+            return $this->json(["message" => "L'adresse email doit faire moins de 65 caractères"], 400);
+        }
+
+        if (!empty($updatedCabinet["email"]) && !filter_var($updatedCabinet["email"], FILTER_VALIDATE_EMAIL)) {
+            return $this->json(["message" => "L'adresse email n'est pas au bon format"], 400);
+        }
+
+        if (!empty($updatedCabinet["tel"]) && !filter_var($updatedCabinet["tel"], FILTER_VALIDATE_REGEXP, ["options" => ["regexp" => "/^[0-9]{10}$/"]])) {
+            return $this->json(["message" => "Le numéro de téléphone n'est pas au bon format"], 400);
+        }
+
         $cabinetToUpdate = $cabinetRepository->find($updatedCabinet['id']);
 
         if (!$cabinetToUpdate) {
@@ -134,7 +202,7 @@ class CabinetController extends AbstractController
     /**
      * @Route("api/admin/cabinet/delete/{idCabinet}", name="cabinet_delete", methods={"DELETE"})
      */
-    public function deleteCabinet($idCabinet = -1, Request $request, EntityManagerInterface $entityManager, CabinetRepository $cabinetRepository): Response
+    public function deleteCabinet($idCabinet = -1, EntityManagerInterface $entityManager, CabinetRepository $cabinetRepository): Response
     {
         //Suppression en cascade, cela supprime le cabinet, le user et les licences associées
 

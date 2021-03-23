@@ -49,7 +49,7 @@ class AuthController extends AbstractController
     /**
      * @Route("api/admin/user/password/{nomCabinet}", name="cabinet_user_password_update", methods={"PUT"})
      */
-    public function updateCabinet(string $nomCabinet = "", Request $request, EntityManagerInterface $entityManager, UserRepository $userRepository, UserPasswordEncoderInterface $encoder): Response
+    public function updatePassword(string $nomCabinet = "", Request $request, EntityManagerInterface $entityManager, UserRepository $userRepository, UserPasswordEncoderInterface $encoder): Response
     {
 
         if ($nomCabinet) {
@@ -63,6 +63,14 @@ class AuthController extends AbstractController
                 return $this->json(["message" => "Veuillez renseigner le nouveau mot de passe"], 400);
             }
 
+            if (strlen($newPassword) < 8) {
+                return $this->json(["message" => "Le mot de passe doit faire au moins 8 caractères"], 400);
+            }
+
+            if (strlen($newPassword) > 40) {
+                return $this->json(["message" => "Le mot de passe doit faire moins de 41 caractères"], 400);
+            }
+
             $userToUpdate = $userRepository->findOneBy(["username" => $nomCabinet]);
             if (!$userToUpdate) {
                 return $this->json(["message" => "Cet utilisateur n'existe pas"], 400);
@@ -74,7 +82,6 @@ class AuthController extends AbstractController
             $entityManager->flush();
 
             return $this->json(["message" => "Mot de passe modifié"], 200);
-
         } else {
             return $this->json(["message" => "Username non renseigné"], 400);
         }
