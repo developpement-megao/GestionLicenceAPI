@@ -61,7 +61,7 @@ class CabinetController extends AbstractController
 
         $jsonRecu = $request->getContent();
         $newCabinet = $serializer->deserialize(json_encode(json_decode($jsonRecu, true)["cabinet"]), Cabinet::class, 'json');
-        
+
         if ($newCabinet->getNomCabinet() === "") {
             return $this->json(["message" => "Le nom du cabinet est obligatoire"], 400);
         }

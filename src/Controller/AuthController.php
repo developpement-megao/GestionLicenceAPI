@@ -35,12 +35,15 @@ class AuthController extends AbstractController
      */
     public function getCabinetUserPassword(string $nomCabinet = "", UserRepository $userRepository, MyCustomEncoder $encoder): Response
     {
+
         if ($nomCabinet) {
             $password = $userRepository->getUserPassword($nomCabinet);
+            
             if (empty($password)) {
                 return $this->json(["message" => "Cet utilisateur n'existe pas"], 400);
             }
-            return $this->json($encoder->decodePassword($password["password"]), 200);
+
+            return $this->json($encoder->decodePassword($password["password"], 200));
         } else {
             return $this->json(["message" => "Username non renseigné"], 400);
         }
