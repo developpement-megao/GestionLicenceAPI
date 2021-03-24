@@ -76,7 +76,7 @@ class LicenceController extends AbstractController
             return $this->json(["message" => "La date de début est obligatoire"], 400);
         }
 
-        if (!empty($newLicence->getDateFin()) && $newLicence->getDateFin()<= $newLicence->getDateDebut()) {
+        if (!empty($newLicence->getDateFin()) && $newLicence->getDateFin() <= $newLicence->getDateDebut()) {
             return $this->json(["message" => "La date de fin doit être supérieur à la date de début"], 400);
         }
 
@@ -92,10 +92,10 @@ class LicenceController extends AbstractController
             return $this->json(["message" => "Le delta du nombre de jours avant l'expiration de la licence doit être inférieur à 31"], 400);
         }
 
-        if(empty($licenceDecode["cabinetId"])){
+        if (empty($licenceDecode["cabinetId"])) {
             return $this->json(["message" => "L'id du cabinet est obligatoire"], 400);
         }
-        
+
         $cabinet = $cabinetRepository->find($licenceDecode["cabinetId"]);
         if (!$cabinet) {
             return $this->json(["message" => "Ce cabinet n'existe pas"], 400);
@@ -129,15 +129,19 @@ class LicenceController extends AbstractController
                 return $this->json(["message" => "Cette licence n'est associée à aucun cabinet"], 400);
             }
 
+            $dateFin = $licence->getDateFin();
+            $deltaJourFin = $licence->getDeltaJourFin();
+            $deltaNombrePostes = $licence->getDeltaNombrePostes();
+
             $cleLicence = [
                 "nomCabinet" => str_pad($cabinet->getNomCabinet(), 64),
                 "dateDebut" => date_format($licence->getDateDebut(), "Y") . date_format($licence->getDateDebut(), "m") . date_format($licence->getDateDebut(), "d"),
-                "dateFin" => date_format($licence->getDateFin(), "Y") . date_format($licence->getDateFin(), "m") . date_format($licence->getDateFin(), "d"),
-                "deltaJourFin" => str_pad(intval($licence->getDeltaJourFin()), 4),
+                "dateFin" => (!empty($dateFin)) ? date_format($licence->getDateFin(), "Y") . date_format($licence->getDateFin(), "m") . date_format($licence->getDateFin(), "d") : null,
+                "deltaJourFin" => (!empty($deltaJourFin)) ? str_pad(intval($licence->getDeltaJourFin()), 4) : null,
                 "nombrePostes" => str_pad($licence->getNombrePostes(), 4),
-                "deltaNombrePostes" => str_pad(intval($licence->getDeltaNombrePostes()), 4)
+                "deltaNombrePostes" => (!empty($deltaNombrePostes)) ? str_pad(intval($licence->getDeltaNombrePostes()), 4) : null
             ];
-            
+
             return $this->json($encoder->encodePassword(implode("|", $cleLicence), ""), 200);
         }
     }
