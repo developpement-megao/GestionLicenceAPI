@@ -6,6 +6,7 @@ use App\Entity\Cabinet;
 use App\Entity\User;
 use App\Form\CabinetFormType;
 use App\Repository\CabinetRepository;
+use App\Repository\LicenceRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -17,17 +18,27 @@ use Symfony\Component\Serializer\SerializerInterface;
 class CabinetController extends AbstractController
 {
     /**
-     * @Route("api/admin/cabinets", name="cabinets", methods={"GET"})
+     * @Route("admin/cabinets", name="cabinets", methods={"GET"})
      */
-    public function getAllCabinets(CabinetRepository $cabinetRepository): Response
-    {
-        $cabinets = $cabinetRepository->findAll();
 
-        return $this->json($cabinets, 200, [], ['groups' => 'cabinet:read']);
+    public function getAllCabinets(CabinetRepository $cabinetRepository, LicenceRepository $licenceRepository): Response
+    {
+        $result = [];
+        $cabinets = $cabinetRepository->findAll();
+        foreach($cabinets as $cabinet){
+            $nbActiveLicences = $licenceRepository->getNbActiveLicence($cabinet);
+            $nbActiveForNoLongerLicences = $licenceRepository->getNbActiveForNoLongerLicence($cabinet);    
+            $nbExpiredLicences = $licenceRepository->getNbExpiredLicence($cabinet);
+            $nbLicencesStatus = ["nbActiveLicences" => $nbActiveLicences,
+                        "nbActiveForNoLongerLicences" => $nbActiveForNoLongerLicences,
+                        "nbExpiredLicences" => $nbExpiredLicences];
+            array_push($result, ["cabinet" => $cabinet, "nbLicencesStatus" => $nbLicencesStatus]);
+        }
+        return $this->json($result, 200, [], ['groups' => 'cabinet:read']);
     }
 
     /**
-     * @Route("api/admin/cabinets/nomCabinet", name="cabinets_name", methods={"GET"})
+     * @Route("admin/cabinets/nomCabinet", name="cabinets_name", methods={"GET"})
      */
     public function getAllCabinetsNom(CabinetRepository $cabinetRepository): Response
     {
@@ -36,7 +47,7 @@ class CabinetController extends AbstractController
     }
 
     /**
-     * @Route("api/admin/cabinet/{id}", name="cabinet", methods={"GET"})
+     * @Route("admin/cabinet/{id}", name="cabinet", methods={"GET"})
      */
     public function getOneCabinet(int $id = -1, CabinetRepository $cabinetRepository, SerializerInterface $serializer): Response
     {
@@ -54,7 +65,7 @@ class CabinetController extends AbstractController
     }
 
     /**
-     * @Route("api/admin/cabinet/create", name="cabinet_create", methods={"POST"})
+     * @Route("admin/cabinet/create", name="cabinet_create", methods={"POST"})
      */
     public function createCabinet(Request $request,  SerializerInterface $serializer, EntityManagerInterface $entityManager, UserPasswordEncoderInterface $encoder): Response
     {
@@ -129,7 +140,7 @@ class CabinetController extends AbstractController
     }
 
     /**
-     * @Route("api/admin/cabinet/update", name="cabinet_update", methods={"PUT"})
+     * @Route("admin/cabinet/update", name="cabinet_update", methods={"PUT"})
      */
     public function updateCabinet(Request $request, EntityManagerInterface $entityManager, CabinetRepository $cabinetRepository): Response
     {
@@ -200,7 +211,7 @@ class CabinetController extends AbstractController
     }
 
     /**
-     * @Route("api/admin/cabinet/delete/{idCabinet}", name="cabinet_delete", methods={"DELETE"})
+     * @Route("admin/cabinet/delete/{idCabinet}", name="cabinet_delete", methods={"DELETE"})
      */
     public function deleteCabinet($idCabinet = -1, EntityManagerInterface $entityManager, CabinetRepository $cabinetRepository): Response
     {

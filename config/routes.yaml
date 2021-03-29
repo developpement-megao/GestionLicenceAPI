@@ -3,5 +3,5 @@
 #    controller: App\Controller\DefaultController::index
 
 authentication_token:
-    path: /api/login
+    path: /login
     methods: ['POST']

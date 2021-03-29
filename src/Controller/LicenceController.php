@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Licence;
+use App\Form\LicenceFormType;
 use App\Repository\CabinetRepository;
 use App\Repository\LicenceRepository;
 use App\Security\Encoder\MyCustomEncoder;
@@ -16,7 +17,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 class LicenceController extends AbstractController
 {
     /**
-     * @Route("api/admin/licences/{idCabinet}", name="licences_cabinet", methods={"GET"})
+     * @Route("admin/licences/{idCabinet}", name="licences_cabinet", methods={"GET"})
      */
     public function getAllLicencesByCabinet($idCabinet = -1, CabinetRepository $cabinetRepository, LicenceRepository $licenceRepository): Response
     {
@@ -33,7 +34,7 @@ class LicenceController extends AbstractController
     }
 
     /**
-     * @Route("api/licences/{idCabinet}", name="licences_actives_cabinet", methods={"GET"})
+     * @Route("licences/{idCabinet}", name="licences_actives_cabinet", methods={"GET"})
      */
     public function getAllActiveLicencesByCabinet($idCabinet = -1, CabinetRepository $cabinetRepository, LicenceRepository $licenceRepository): Response
     {
@@ -50,7 +51,7 @@ class LicenceController extends AbstractController
     }
 
     /**
-     * @Route("api/admin/licence/create", name="licence_create", methods={"POST"})
+     * @Route("admin/licence/create", name="licence_create", methods={"POST"})
      */
     public function createLicence(Request $request, SerializerInterface $serializer, CabinetRepository $cabinetRepository, EntityManagerInterface $entityManager): Response
     {
@@ -106,12 +107,67 @@ class LicenceController extends AbstractController
 
         $entityManager->flush();
 
-        return $this->json(["message" => "Cabinet crée"], 201);
+        return $this->json(["message" => "Licence créée"], 201);
+    }
+
+     /**
+     * @Route("admin/licence/update", name="licence_update", methods={"PUT"})
+     */
+    public function updateLicence(Request $request, EntityManagerInterface $entityManager,  SerializerInterface $serializer, LicenceRepository $licenceRepository): Response
+    {
+
+        $jsonRecu = $request->getContent();
+
+        $updatedLicence = json_decode($jsonRecu, true)["licence"];
+
+
+        if (empty($updatedLicence["nombrePostes"])) {
+            return $this->json(["message" => "Le nombre de postes est obligatoire"], 400);
+        }
+
+        if (empty($updatedLicence["dateCreation"])) {
+            return $this->json(["message" => "La date de création est obligatoire"], 400);
+        }
+
+        if (empty($updatedLicence["dateDebut"])) {
+            return $this->json(["message" => "La date de début est obligatoire"], 400);
+        }
+
+        if (!empty($updatedLicence["dateFin"]) && $updatedLicence["dateFin"] <= $updatedLicence["dateDebut"]) {
+            return $this->json(["message" => "La date de fin doit être supérieur à la date de début"], 400);
+        }
+
+        if (intval($updatedLicence["nombrePostes"]) > 1000) {
+            return $this->json(["message" => "La nombre de postes doit être inférieur à 1001"], 400);
+        }
+
+        if (intval($updatedLicence["deltaNombrePostes"]) > 30) {
+            return $this->json(["message" => "Le delta du nombre de postes doit être inférieur à 31"], 400);
+        }
+
+        if (intval($updatedLicence["deltaJourFin"]) > 30) {
+            return $this->json(["message" => "Le delta du nombre de jours avant l'expiration de la licence doit être inférieur à 31"], 400);
+        }
+
+        $licenceToUpdate = $licenceRepository->find($updatedLicence['id']);
+
+
+        if (!$licenceToUpdate) {
+            return $this->json(["message" => "Cette licence n'existe pas"], 400);
+        }
+
+        $form = $this->createForm(LicenceFormType::class, $licenceToUpdate);
+        $form->submit($updatedLicence);
+
+        $entityManager->persist($licenceToUpdate);
+        $entityManager->flush();
+
+        return $this->json(["message" => "Licence modifiée"], 200);
     }
 
 
     /**
-     * @Route("api/download/licences/{idLicence}", name="licences_download", methods={"GET"})
+     * @Route("download/licences/{idLicence}", name="licences_download", methods={"GET"})
      */
     public function downloadLicence($idLicence = -1, LicenceRepository $licenceRepository, MyCustomEncoder $encoder): Response
     {
@@ -144,5 +200,28 @@ class LicenceController extends AbstractController
 
             return $this->json($encoder->encodePassword(implode("|", $cleLicence), ""), 200);
         }
+    }
+
+    /**
+     * @Route("admin/licence/delete/{idLicence}", name="licence_delete", methods={"DELETE"})
+     */
+    public function deleteLicence($idLicence = -1, EntityManagerInterface $entityManager, LicenceRepository $licenceRepository): Response
+    {
+
+        if ($idLicence == -1) {
+            return $this->json(["message" => "Veuillez renseigner un identifiant de licence"], 400);
+        }
+
+        $licenceToDelete = $licenceRepository->find($idLicence);
+
+        if (!$licenceToDelete) {
+            return $this->json(["message" => "Cette licence n'existe pas"], 400);
+        }
+
+        $entityManager->remove($licenceToDelete);
+
+        $entityManager->flush();
+
+        return $this->json(["message" => "licence supprimée"], 200);
     }
 }

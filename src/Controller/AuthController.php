@@ -15,7 +15,7 @@ use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 class AuthController extends AbstractController
 {
     /**
-     * @Route("api/user/{username}", name="login", methods={"GET"})
+     * @Route("user/{username}", name="login", methods={"GET"})
      */
     public function getUserWithUsername(string $username = "", UserRepository $userRepository): Response
     {
@@ -32,7 +32,7 @@ class AuthController extends AbstractController
     }
 
     /**
-     * @Route("api/admin/user/password/{nomCabinet}", name="user_password", methods={"GET"})
+     * @Route("admin/user/password/{nomCabinet}", name="user_password", methods={"GET"})
      */
     public function getCabinetUserPassword(string $nomCabinet = "", UserRepository $userRepository, MyCustomEncoder $encoder, UserPasswordEncoderInterface $enc): Response
     {
@@ -51,7 +51,7 @@ class AuthController extends AbstractController
     }
 
     /**
-     * @Route("api/admin/user/password/{nomCabinet}", name="cabinet_user_password_update", methods={"PUT"})
+     * @Route("admin/user/password/{nomCabinet}", name="cabinet_user_password_update", methods={"PUT"})
      */
     public function updatePassword(string $nomCabinet = "", Request $request, EntityManagerInterface $entityManager, UserRepository $userRepository, UserPasswordEncoderInterface $encoder): Response
     {

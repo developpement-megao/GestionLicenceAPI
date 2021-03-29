@@ -56,28 +56,69 @@ class LicenceRepository extends ServiceEntityRepository
             ->addSelect('CASE WHEN l.dateFin IS NULL THEN 1 ELSE 0 END AS HIDDEN DATEFIN_NULL')
             ->andWhere('l.cabinet = :cabinet')
             ->setParameter('cabinet', $cabinet)
-            ->orderBy('DATEFIN_NULL','DESC')
+            ->orderBy('DATEFIN_NULL', 'DESC')
             ->addOrderBy('l.dateFin', 'DESC')
             ->addOrderBy('l.deltaJourFin', 'DESC')
             ->getQuery()
-            ->getResult()
-        ;
+            ->getResult();
     }
 
     public function getActiveLicences(Cabinet $cabinet)
     {
         $dateNow = new DateTime();
+        $dateNow->setTime(0, 0, 0, 0);
         return $this->createQueryBuilder('l')
             ->addSelect('CASE WHEN l.dateFin IS NULL THEN 1 ELSE 0 END AS HIDDEN DATEFIN_NULL')
             ->andWhere('DATE_ADD(COALESCE(l.dateFin, :date), COALESCE(l.deltaJourFin, 0), \'day\') >= :date')
             ->andWhere('l.cabinet = :cabinet')
             ->setParameter('date', $dateNow)
             ->setParameter('cabinet', $cabinet)
-            ->orderBy('DATEFIN_NULL','ASC')
+            ->orderBy('DATEFIN_NULL', 'ASC')
             ->addOrderBy('l.dateFin', 'ASC')
             ->addOrderBy('l.deltaJourFin', 'ASC')
             ->getQuery()
-            ->getResult()
-        ;
+            ->getResult();
+    }
+
+    public function getNbActiveLicence(Cabinet $cabinet)
+    {
+        $dateNow = new DateTime();
+        $dateNow->setTime(0, 0, 0, 0);
+        return $this->createQueryBuilder('l')
+            ->addSelect('count(l.id) as nbActiveLicence')
+            ->andWhere('(l.dateFin > :date or l.dateFin is null)')
+            ->andWhere('l.cabinet = :cabinet')
+            ->setParameter('date', $dateNow)
+            ->setParameter('cabinet', $cabinet)
+            ->getQuery()
+            ->getOneOrNullResult()["nbActiveLicence"];
+    }
+
+    public function getNbActiveForNoLongerLicence(Cabinet $cabinet)
+    {
+        $dateNow = new DateTime();
+        $dateNow->setTime(0, 0, 0, 0);
+        return $this->createQueryBuilder('l')
+            ->addSelect('count(l.id) as nbActiveLicence')
+            ->andWhere('COALESCE(l.dateFin, 0) <= :date and DATE_ADD(COALESCE(l.dateFin, 0), COALESCE(l.deltaJourFin, 0), \'day\') > :date')
+            ->andWhere('l.cabinet = :cabinet')
+            ->setParameter('date', $dateNow)
+            ->setParameter('cabinet', $cabinet)
+            ->getQuery()
+            ->getOneOrNullResult()["nbActiveLicence"];
+    }
+
+    public function getNbExpiredLicence(Cabinet $cabinet)
+    {
+        $dateNow = new DateTime();
+        $dateNow->setTime(0, 0, 0, 0);
+        return $this->createQueryBuilder('l')
+            ->addSelect('count(l.id) as nbActiveLicence, DATE_ADD(COALESCE(l.dateFin, 0), COALESCE(l.deltaJourFin, 0), \'day\') as t')
+            ->andWhere('COALESCE(l.dateFin, 0) <= :date and DATE_ADD(COALESCE(l.dateFin, 0), COALESCE(l.deltaJourFin, 0), \'day\') < :date')
+            ->andWhere('l.cabinet = :cabinet')
+            ->setParameter('date', $dateNow)
+            ->setParameter('cabinet', $cabinet)
+            ->getQuery()
+            ->getOneOrNullResult()["nbActiveLicence"];
     }
 }
