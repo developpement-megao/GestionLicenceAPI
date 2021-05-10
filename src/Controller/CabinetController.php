@@ -49,7 +49,7 @@ class CabinetController extends AbstractController
     /**
      * @Route("admin/cabinet/{id}", name="cabinet", methods={"GET"})
      */
-    public function getOneCabinet(int $id = -1, CabinetRepository $cabinetRepository, SerializerInterface $serializer): Response
+    public function getOneCabinet(int $id = -1, CabinetRepository $cabinetRepository): Response
     {
         if ($id == -1) {
             return $this->json(["message" => "Veuillez renseigner un identifiant"], 400);
@@ -93,12 +93,17 @@ class CabinetController extends AbstractController
             return $this->json(["message" => "Le nom du client doit faire moins de 65 caractères"], 400);
         }
 
+        
+        if (strlen($newCabinet->getNomClient()) > 4) {
+            return $this->json(["message" => "Le code du cabinet doit faire moins de 5 caractères"], 400);
+        }
+        
         if (strlen($newCabinet->getAdresse()) > 128) {
             return $this->json(["message" => "L'adresse doit faire moins de 129 caractères"], 400);
         }
 
-        if (strlen($newCabinet->getTel()) > 10) {
-            return $this->json(["message" => "Le numéro de téléphone doit être composé de 10 chiffres"], 400);
+        if (strlen($newCabinet->getTel()) > 17) {
+            return $this->json(["message" => "Le numéro de téléphone doit être composé de moins de 18 caractères"], 400);
         }
 
         if (strlen($newCabinet->getEmail()) > 64) {
@@ -109,7 +114,7 @@ class CabinetController extends AbstractController
             return $this->json(["message" => "L'adresse email n'est pas au bon format"], 400);
         }
 
-        if (!empty($newCabinet->getTel()) && !filter_var($newCabinet->getTel(), FILTER_VALIDATE_REGEXP, ["options" => ["regexp" => "/^[0-9]{10}$/"]])) {
+        if (!empty($newCabinet->getTel()) && !filter_var($newCabinet->getTel(), FILTER_VALIDATE_REGEXP, ["options" => ["regexp" => "/^(0|\+33)[1-9]([-. ]?[0-9]{2}){4}$/"]])) {
             return $this->json(["message" => "Le numéro de téléphone n'est pas au bon format"], 400);
         }
 
@@ -169,12 +174,16 @@ class CabinetController extends AbstractController
             return $this->json(["message" => "Le nom du client doit faire moins de 65 caractères"], 400);
         }
 
+        if (strlen($updatedCabinet["codeCabinet"]) > 4) {
+            return $this->json(["message" => "Le code du cabinet doit faire moins de 5 caractères"], 400);
+        }
+
         if (strlen($updatedCabinet["adresse"]) > 128) {
             return $this->json(["message" => "L'adresse doit faire moins de 129 caractères"], 400);
         }
 
-        if (strlen($updatedCabinet["tel"]) > 10) {
-            return $this->json(["message" => "Le numéro de téléphone doit être composé de 10 chiffres"], 400);
+        if (strlen($updatedCabinet["tel"]) > 17) {
+            return $this->json(["message" => "Le numéro de téléphone doit être composé de moins de 18 caractères"], 400);
         }
 
         if (strlen($updatedCabinet["email"]) > 64) {
@@ -185,7 +194,7 @@ class CabinetController extends AbstractController
             return $this->json(["message" => "L'adresse email n'est pas au bon format"], 400);
         }
 
-        if (!empty($updatedCabinet["tel"]) && !filter_var($updatedCabinet["tel"], FILTER_VALIDATE_REGEXP, ["options" => ["regexp" => "/^[0-9]{10}$/"]])) {
+        if (!empty($updatedCabinet["tel"]) && !filter_var($updatedCabinet["tel"], FILTER_VALIDATE_REGEXP, ["options" => ["regexp" => "/^(0|\+33)[1-9]([-. ]?[0-9]{2}){4}$/"]])) {
             return $this->json(["message" => "Le numéro de téléphone n'est pas au bon format"], 400);
         }
 

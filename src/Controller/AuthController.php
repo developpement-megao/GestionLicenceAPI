@@ -15,7 +15,7 @@ use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 class AuthController extends AbstractController
 {
     /**
-     * @Route("user/{username}", name="login", methods={"GET"})
+     * @Route("user/{username}", name="user", methods={"GET"})
      */
     public function getUserWithUsername(string $username = "", UserRepository $userRepository): Response
     {

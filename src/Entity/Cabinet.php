@@ -45,7 +45,7 @@ class Cabinet
     private $nomClient;
 
     /**
-     * @ORM\Column(type="string", length=10, nullable=true)
+     * @ORM\Column(type="string", length=17, nullable=true)
      * @Groups("cabinet:read")
      */
     private $tel;
@@ -72,6 +72,12 @@ class Cabinet
      * @Groups("cabinet:read")
      */
     private $isActive;
+
+    /**
+     * @ORM\Column(type="string", length=4, nullable=true)
+     * @Groups("cabinet:read")
+     */
+    private $codeCabinet;
 
     public function __construct()
     {
@@ -210,6 +216,18 @@ class Cabinet
     public function setIsActive(bool $isActive): self
     {
         $this->isActive = $isActive;
+
+        return $this;
+    }
+
+    public function getCodeCabinet(): ?string
+    {
+        return $this->codeCabinet;
+    }
+
+    public function setCodeCabinet(?string $codeCabinet): self
+    {
+        $this->codeCabinet = $codeCabinet;
 
         return $this;
     }
